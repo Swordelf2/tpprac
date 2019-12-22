@@ -80,9 +80,7 @@ for el in train_corpus:
 precision = tp / (tp + fp)
 recall = tp / (tp + fn)
 F1 = 2 * precision * recall / (precision + recall)
-print("tp = {}\ntn={}\nfp={}\nfn={}".format(tp, tn, fp, fn))
+print("tp={}\ntn={}\nfp={}\nfn={}".format(tp, tn, fp, fn))
+print("precision = {}\nrecall={}".format(precision, recall))
 print("F1 = {}".format(F1))
 
-
-
-        
