@@ -1,12 +1,13 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 
 from nltk.corpus import stopwords
 
 class Solution:
     def __init__(self):
         # Init vectorizer
-        self.vectorizer = TfidfVectorizer()
+        self.vectorizer = CountVectorizer()
         stop_words = stopwords.words('russian')
         analyzer = self.vectorizer.build_analyzer()
         for word in stopwords.words('english'):
@@ -15,10 +16,14 @@ class Solution:
 
         # Init labels
         self.labels = {'Вредоносное ПО', 'Инцидент', 'Угроза',
-                'Уязвимость', 'Прочее', 'Эксплойт'}
+                'Уязвимость', 'Эксплойт'}
+        self.label_other = 'Прочее'
 
-        # Init Log Regression model for every label
-
+        # Init Log Regression classifier for every label
+        self.clf = {label: LogisticRegression(
+            solver = 'lbfgs', random_state=0,
+            max_iter = 4000)
+                for label in self.labels}
     
     # Train corpus: List[Tuple[str, str, Dict[str, Set[str]]]]
     def train(self, train_corpus):
@@ -40,8 +45,26 @@ class Solution:
         X = self.vectorizer.fit_transform(docs)
 
         # Fit into LogisticRegression
+        for label in self.labels:
+            self.clf[label].fit(X, Y[label])
 
     # news: List[Tuple[str, str]]
     # Returns List[Set[str]] - list of sets of labels
     def predict(self, news):
-        return [self.labels]
+        docs = [news_el[1] for news_el in news]
+        X = self.vectorizer.transform(docs)
+
+        result_label_sets = [set() for i in range(len(docs))]
+
+        for label in self.labels:
+            predictions = self.clf[label].predict(X)
+            for label_set, p in zip(result_label_sets, predictions):
+                if p == 1:
+                    label_set.add(label)
+
+        # Add 'Прочее' to every empty label set
+        for label_set in result_label_sets:
+            if len(label_set) == 0:
+                label_set.add(self.label_other)
+
+        return result_label_sets

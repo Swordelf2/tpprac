@@ -1,14 +1,15 @@
 #!/usr/bin/python3
 import json
-import pprint as pp
 
 from solution import Solution
 
 from collections import Counter
 
-test_data_proportion = 0.3  
+test_data_proportion = 0.3 
 
-labels = {'Вредоносное ПО', 'Инцидент', 'Угроза', 'Уязвимость', 'Прочее', 'Эксплойт'}
+labels = {'Вредоносное ПО', 'Инцидент', 'Угроза',
+        'Уязвимость', 'Эксплойт'}
+label_other = 'Прочее'
 
 with open("dataset.json", "r") as dataset_json_file:
     json_els = json.loads(dataset_json_file.read())
@@ -56,6 +57,7 @@ for el in train_corpus:
     gold_labels = {counter_item[0]
             for counter_item in c.items()
             if counter_item[1] > 2/3 * total_picks}
+    gold_labels.discard(label_other)
     
 
     # Predict with the solution
